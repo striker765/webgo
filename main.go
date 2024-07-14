@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -39,13 +40,16 @@ func main() {
 		ip := c.Query("ip")
 
 		// Chave da API do VirusTotal
-		apiKey := "9858e80a2593bde69ce0906a6fd1e79a2b0df6c31004fab9f7dbce4d32df12c1"
+		apiKey := "coloque-sua-chave-de-api-aqui"
 
 		// URL da API do VirusTotal para verificar IPs
 		url := fmt.Sprintf("https://www.virustotal.com/vtapi/v2/ip-address/report?apikey=%s&ip=%s", apiKey, ip)
 
 		// Realiza a requisição GET para a API do VirusTotal
-		resp, err := http.Get(url)
+		client := http.Client{
+			Timeout: time.Second * 10, // timeout de 10 segundos
+		}
+		resp, err := client.Get(url)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao chamar a API do VirusTotal"})
 			return
@@ -66,51 +70,12 @@ func main() {
 			return
 		}
 
-		// Exibe os resultados da verificação em formato JSON
+		// Exibe os resultados da verificação
 		c.JSON(http.StatusOK, vtResponse)
 	})
 
-	// Rota para lidar com a verificação de URL
-	r.GET("/check-url", func(c *gin.Context) {
-		url := c.Query("url")
-
-		// Chave da API do VirusTotal
-		apiKey := "sua-chave-de-api-aqui"
-
-		// URL da API do VirusTotal para verificar URLs
-		urlVT := fmt.Sprintf("https://www.virustotal.com/vtapi/v2/url/report?apikey=%s&resource=%s", apiKey, url)
-
-		// Realiza a requisição GET para a API do VirusTotal
-		resp, err := http.Get(urlVT)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao chamar a API do VirusTotal"})
-			return
-		}
-		defer resp.Body.Close()
-
-		// Decodifica a resposta JSON
-		var vtResponse VTResponse
-		err = json.NewDecoder(resp.Body).Decode(&vtResponse)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao decodificar a resposta JSON"})
-			return
-		}
-
-		// Verifica se o request foi bem sucedido
-		if vtResponse.ResponseCode != 1 {
-			c.JSON(http.StatusBadRequest, gin.H{"error": vtResponse.VerboseMsg})
-			return
-		}
-
-		// Exibe os resultados da verificação em formato JSON
-		c.JSON(http.StatusOK, vtResponse)
-	})
-
-	// Servir arquivos estáticos (por exemplo, HTML, CSS, JS)
-	r.Static("/static", "./static")
-
-	// Carregar templates HTML
-	r.LoadHTMLGlob("/*")
+	// Servir arquivos estáticos
+	r.StaticFile("/styles.css", "./styles.css")
 
 	// Executar o servidor
 	r.Run(":8080")
