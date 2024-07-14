@@ -40,7 +40,7 @@ func main() {
 		ip := c.Query("ip")
 
 		// Chave da API do VirusTotal
-		apiKey := "coloque-sua-chave-de-api-aqui"
+		apiKey := "9858e80a2593bde69ce0906a6fd1e79a2b0df6c31004fab9f7dbce4d32df12c1"
 
 		// URL da API do VirusTotal para verificar IPs
 		url := fmt.Sprintf("https://www.virustotal.com/vtapi/v2/ip-address/report?apikey=%s&ip=%s", apiKey, ip)
